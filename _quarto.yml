@@ -1,0 +1,61 @@
+project:
+  type: website
+  # Só as páginas .qmd viram site (deixa de fora arquivos de apoio)
+  render:
+    - "*.qmd"
+  # Copia o relatório e o Dia 1 para downloads/, para os links de download
+  post-render: _copia-downloads.R
+
+# Os cálculos rodam só na sua máquina; o site publica os resultados guardados
+execute:
+  freeze: auto
+
+website:
+  title: "Orientação sexual, violência e parentalidade na PNS"
+  description: "Minicurso sobre indicadores de orientação sexual, violência e parentalidade com os microdados da Pesquisa Nacional de Saúde 2019 em R."
+  site-url: "https://lincolntsilva.github.io/saude-sexualidade-pns-2019/"
+  repo-url: "https://github.com/LincolnTSilva/saude-sexualidade-pns-2019"
+  search: true
+  page-navigation: true
+  back-to-top-navigation: true
+
+  navbar:
+    left:
+      - href: index.qmd
+        text: Início
+      - href: preparacao.qmd
+        text: Preparação
+      - text: Programa
+        menu:
+          - href: dia1.qmd
+            text: "Dia 1: da pesquisa aos primeiros indicadores"
+          - href: dia2.qmd
+            text: "Dia 2: violência, orientação sexual e parentalidade"
+          - href: relatorio.qmd
+            text: "Relatório"
+      - href: materiais.qmd
+        text: Materiais
+      - href: dados.qmd
+        text: Dados
+      - href: referencias.qmd
+        text: Referências
+      - href: about.qmd
+        text: Sobre
+    right:
+      - icon: github
+        href: https://github.com/LincolnTSilva/saude-sexualidade-pns-2019
+        aria-label: Repositório no GitHub
+
+  page-footer:
+    left: "Minicurso interno · 2026"
+    right: "Feito com [Quarto](https://quarto.org)"
+
+format:
+  html:
+    lang: pt
+    theme:
+      - cosmo
+      - tema.scss
+    css: styles.css
+    toc: true
+    toc-title: "Nesta página"

@@ -1,0 +1,77 @@
+---
+title: "Indicadores de orientação sexual, violência e parentalidade com dados da PNS em R"
+subtitle: "Minicurso 2 · 6 horas em 2 encontros de 3 horas · 1º e 2 de dezembro"
+toc: false
+---
+
+::: {.destaque}
+Aprenda a construir, estimar e interpretar indicadores de orientação sexual, violência e parentalidade com os microdados da Pesquisa Nacional de Saúde (PNS) 2019, em um fluxo reprodutível com R e Quarto.
+
+Ao final, você reproduz um relatório completo e acrescenta a ele um indicador criado por você.
+:::
+
+## Como o curso funciona
+
+Começamos pelo fim: na abertura, você vê o relatório pronto. Nos dois dias, desmontamos e remontamos esse relatório, etapa por etapa. No encerramento, o mesmo relatório é gerado para outro recorte geográfico, trocando apenas um parâmetro.
+
+Desta vez, a leitura da base e o código de preparação andam mais rápido, para sobrar mais tempo para produzir e analisar os indicadores.
+
+::: {.grid}
+
+::: {.g-col-12 .g-col-md-6}
+::: {.cartao}
+### Dia 1: da pesquisa aos primeiros indicadores
+
+- Orientação sexual, violência e parentalidade sob a ótica de gênero e raça
+- A PNS 2019 e o questionário do morador selecionado
+- Leitura da base
+- Das variáveis aos indicadores
+- Desenho amostral e indicadores com precisão
+
+[Ver programa do Dia 1 →](dia1.qmd)
+:::
+:::
+
+::: {.g-col-12 .g-col-md-6}
+::: {.cartao}
+### Dia 2: violência, orientação sexual e parentalidade
+
+- Violência psicológica, física e sexual por sexo
+- Orientação sexual e grupos numericamente pequenos
+- Paternidade e maternidade
+- Atividade: um indicador novo
+- O relatório para outro recorte geográfico
+
+[Ver programa do Dia 2 →](dia2.qmd)
+:::
+:::
+
+:::
+
+## O que você vai aprender
+
+1. Localizar no questionário e no dicionário da PNS as variáveis de um indicador, e saber quem respondeu a cada pergunta.
+2. Recodificar variáveis e construir as variáveis dos indicadores de orientação sexual, violência e parentalidade.
+3. Aplicar o desenho amostral e o peso do morador selecionado com os pacotes `srvyr` e `survey`.
+4. Calcular taxas, médias e distribuições, com intervalo de confiança e coeficiente de variação.
+5. Desagregar indicadores por sexo, cor ou raça, idade e território, avaliando a precisão.
+6. Reconhecer os limites de mensuração e os cuidados com grupos numericamente pequenos.
+7. Testar diferenças entre grupos e comunicar os resultados em tabelas e gráficos.
+8. Reproduzir e atualizar um relatório em Quarto.
+
+## Informações gerais
+
+| | |
+|---|---|
+| **Datas** | 1º e 2 de dezembro de 2026, das 9:30 às 12:30 |
+| **Carga horária** | 6 horas, em 2 encontros de 3 horas |
+| **Local** | Laboratório de informática da universidade |
+| **Pré-requisito** | Alguma familiaridade com R |
+| **Programas** | R, RStudio e Quarto |
+| **Pacotes do R** | `dplyr`, `tidyr`, `stringr`, `readr`, `ggplot2`, `plotly`, `survey`, `srvyr`, `broom` e `PNSIBGE` |
+| **Dados** | Pesquisa Nacional de Saúde 2019, microdados (IBGE) |
+
+::: {.callout-tip}
+## Antes do curso
+Os computadores do laboratório já estarão configurados. Se quiser acompanhar também no seu computador, veja a página [Preparação](preparacao.qmd).
+:::

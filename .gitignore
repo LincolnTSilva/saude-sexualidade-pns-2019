@@ -1,0 +1,35 @@
+# Arquivos internos do Quarto
+/.quarto/
+**/*.quarto_ipynb
+
+# Site gerado: é publicado em outro ramo pelo quarto publish
+/_site/
+
+# Arquivos do RStudio e da sessão do R
+.Rproj.user/
+.Rhistory
+.RData
+.Ruserdata
+
+# Dados: a base é gerada pelo relatório (gerar_base: true), nunca vai para o repositório
+*.rds
+*.zip
+*.csv
+*.gz
+dados/
+
+# Cache do knitr (guarda o download dos microdados)
+*_cache/
+
+# Documentos de apoio, fora do repositório
+*.pdf
+*.docx
+~$*
+
+# Arquivo intermediário que o Quarto deixa quando a renderização é interrompida
+*.rmarkdown
+
+# Figuras guardadas junto com o cache do knitr (o site usa as do _freeze)
+/relatorio_files/
+/dia1_files/
+/dia2_files/

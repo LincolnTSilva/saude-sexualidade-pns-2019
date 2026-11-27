@@ -1,0 +1,69 @@
+---
+title: "Preparação"
+---
+
+::: {.callout-note}
+## No laboratório
+Os computadores do laboratório estarão configurados antes do curso, com R, RStudio, pacotes, projeto e base de dados. Esta página é para quem quiser acompanhar também no próprio computador.
+:::
+
+## 1. Instale os programas
+
+| Programa | Onde baixar |
+|---|---|
+| R | [cran.r-project.org](https://cran.r-project.org) |
+| RStudio | [posit.co/download/rstudio-desktop](https://posit.co/download/rstudio-desktop/) |
+| Quarto | [quarto.org](https://quarto.org/docs/get-started/) |
+
+## 2. Instale os pacotes
+
+No console do R:
+
+```r
+# Repositório do CRAN mantido pela Posit (RStudio), para instalar pacotes caso
+# necessário
+options(repos = c(CRAN = 'https://cran.rstudio.com'))
+
+pacotes <- c(
+  'dplyr', 'tidyr', 'stringr', 'ggplot2', 'plotly', 'readr', 'survey',
+  'srvyr', 'broom', 'PNSIBGE'
+)
+
+# Para cada pacote, o require() tenta carregar e devolve FALSE se ele não
+# estiver instalado; nesse caso, o install.packages() instala e o library()
+# carrega. warn.conflicts = FALSE esconde as mensagens de funções com o
+# mesmo nome em pacotes diferentes (por exemplo, filter() no dplyr e no stats)
+for (pacote in pacotes) {
+  if (!require(pacote, character.only = TRUE, quietly = TRUE,
+               warn.conflicts = FALSE)) {
+    install.packages(pacote)
+    library(pacote, character.only = TRUE, warn.conflicts = FALSE)
+  }
+}
+```
+
+## 3. Baixe o relatório e coloque a base na pasta certa
+
+[<i class="bi bi-download"></i> Baixar o relatório (.qmd)](downloads/relatorio.qmd){.btn .btn-primary}
+
+O relatório lê a base do curso de uma pasta `dados`, ao lado do arquivo `.qmd`. A base pode chegar de duas formas.
+
+**No curso, pelo pendrive.** Copie o arquivo `pns_2019_selecionados.csv.gz` para uma pasta `dados`, criada ao lado do relatório (ou do Dia 1). Não renomeie nem descompacte o arquivo: o relatório lê o `.gz` direto.
+
+```
+minha-pasta/
+├── relatorio.qmd   (ou dia1.qmd)
+└── dados/
+    └── pns_2019_selecionados.csv.gz
+```
+
+**Fora do curso, gerada pelo próprio relatório.** Abra o relatório no RStudio, mude o parâmetro `gerar_base` para `true` no cabeçalho e clique em **Render**: o relatório baixa os microdados da PNS 2019 do IBGE (cerca de 28 MB) com o pacote `PNSIBGE` e grava a base na pasta `dados`. Depois, volte o parâmetro para `false`.
+
+Com a base na pasta `dados` e `gerar_base: false`, abra o relatório no RStudio e rode pelo botão **Render** ou pelo play dos blocos: o RStudio usa a pasta do `.qmd` como ponto de partida e encontra a base. Se a base não estiver lá, o relatório para com uma mensagem dizendo onde ela deveria estar.
+
+::: {.callout-warning}
+## Instale os pacotes antes do curso
+A base vem pronta, mas os pacotes não. Instale-os antes da aula, pelo passo 2 desta página: na rede do local do curso, alguns sites podem estar bloqueados.
+:::
+
+Mais detalhes sobre os arquivos na página [Dados](dados.qmd).

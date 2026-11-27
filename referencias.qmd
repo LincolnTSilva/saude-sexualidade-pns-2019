@@ -1,0 +1,24 @@
+---
+title: "Referências"
+---
+
+## Publicações da PNS 2019
+
+- IBGE. [Pesquisa Nacional de Saúde 2019: orientação sexual autoidentificada da população adulta](https://www.ibge.gov.br/estatisticas/sociais/saude/9160-pesquisa-nacional-de-saude.html). Rio de Janeiro: IBGE, 2022. Estatísticas experimentais.
+- IBGE. [Pesquisa Nacional de Saúde 2019: acidentes, violências, doenças transmissíveis, atividade sexual, características do trabalho e apoio social](https://www.ibge.gov.br/estatisticas/sociais/saude/9160-pesquisa-nacional-de-saude.html). Rio de Janeiro: IBGE, 2021.
+- IBGE. [Pesquisa Nacional de Saúde 2019: ciclos de vida](https://www.ibge.gov.br/estatisticas/sociais/saude/9160-pesquisa-nacional-de-saude.html). Rio de Janeiro: IBGE, 2021.
+- IBGE. [Pesquisa Nacional de Saúde](https://www.ibge.gov.br/estatisticas/sociais/saude/9160-pesquisa-nacional-de-saude.html): página da pesquisa, com questionários, microdados e documentação.
+
+## Pacotes e ferramentas
+
+- [PNSIBGE](https://cran.r-project.org/package=PNSIBGE): download e leitura dos microdados da PNS.
+- [srvyr](https://cran.r-project.org/package=srvyr): análise de amostras complexas com sintaxe do `dplyr`.
+- [survey](https://cran.r-project.org/package=survey): testes e regressão com desenho amostral.
+- [broom](https://broom.tidymodels.org): resultados de modelos e testes em tabelas.
+- [dplyr](https://dplyr.tidyverse.org): manipulação de dados (filtrar, criar variáveis, agrupar e resumir).
+- [tidyr](https://tidyr.tidyverse.org): reorganização de tabelas entre os formatos longo e largo.
+- [stringr](https://stringr.tidyverse.org): tratamento de textos.
+- [readr](https://readr.tidyverse.org): leitura e gravação da base em `.csv.gz`.
+- [ggplot2](https://ggplot2.tidyverse.org): gráficos.
+- [plotly](https://plotly-r.com): gráficos interativos.
+- [Quarto](https://quarto.org): relatórios e sites reprodutíveis.

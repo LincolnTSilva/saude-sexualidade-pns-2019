@@ -1,0 +1,38 @@
+---
+title: "Dados"
+---
+
+O curso usa os **microdados da Pesquisa Nacional de Saúde (PNS) 2019**, do IBGE, realizada em convênio com o Ministério da Saúde.
+
+## Quem responde o quê
+
+A PNS tem um questionário do domicílio, um questionário para todos os moradores e um questionário individual, respondido por **um morador de 15 anos ou mais, sorteado em cada domicílio** (o morador selecionado). Os temas do curso estão no questionário individual, mas cada módulo tem a sua população:
+
+| Dimensão | Módulo da PNS 2019 | Quem responde |
+|---|---|---|
+| Orientação sexual | Y. Atividade sexual (pergunta final do módulo) | Morador selecionado de 18 anos ou mais |
+| Violência | V. Violência | Morador selecionado de 18 anos ou mais |
+| Paternidade | Z. Paternidade e pré-natal do parceiro | Homens selecionados de 15 anos ou mais |
+| Maternidade | S. Atendimento pré-natal (só as perguntas iniciais: gravidez, número de partos e data do último parto) | Mulheres selecionadas de 15 anos ou mais |
+| Saúde da mulher | R. Saúde da mulher (contracepção e planejamento familiar) | Mulheres selecionadas de 15 anos ou mais |
+
+: Fonte: IBGE, publicações da PNS 2019 citadas em [Referências](referencias.qmd).
+
+Por isso, as estimativas do curso usam o **peso do morador selecionado**, e não o peso de todos os moradores.
+
+## Arquivos do curso
+
+| Arquivo | Conteúdo | Usado em |
+|---|---|---|
+| Base do curso (`dados/pns_2019_selecionados.csv.gz`, cerca de 3 MB) | Versão reduzida dos microdados dos moradores selecionados, com as variáveis usadas no curso, em códigos, e as variáveis do desenho amostral (só o peso do morador selecionado) | Todo o relatório: lida com o `readr` no bloco 3 |
+
+O desenho amostral não precisa de arquivo próprio: com cerca de 90 mil moradores selecionados, a função `pns_design()` o monta a partir da base em menos de um segundo, no bloco 5.
+
+## Como a base foi gerada
+
+O código que baixa os microdados do IBGE com o pacote `PNSIBGE` e gera a base está na seção "A base" do [relatório](relatorio.qmd). Ele só roda com o parâmetro `gerar_base: true` e grava a base na pasta `dados`, ao lado do relatório. Veja como fazer na página [Preparação](preparacao.qmd).
+
+::: {.callout-warning}
+## Por que não baixar os dados do IBGE durante a aula?
+Os microdados completos são grandes e demoram para baixar e ler. Com 30 pessoas na mesma rede, o processo ficaria lento. Por isso, no laboratório, a base do curso já estará copiada em cada computador.
+:::

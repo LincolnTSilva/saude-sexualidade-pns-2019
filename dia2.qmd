@@ -1,0 +1,687 @@
+---
+title: "Dia 2: violência, orientação sexual e parentalidade"
+subtitle: "3 horas · da análise das três dimensões ao indicador da turma"
+code-tools: true
+code-links:
+  - text: "Baixar o relatório completo (.qmd)"
+    icon: download
+    href: downloads/relatorio.qmd
+params:
+  # Recortes geográficos, além do Brasil: siglas de UF ou nomes de Grandes
+  # Regiões (a definir na construção do relatório)
+  recortes: ["RJ"]
+  gerar_base: false
+---
+
+<!-- Página gerada por _sincroniza-dias.py: o texto e o código fora dos marcadores "dia" vêm do relatorio.qmd. Edite no relatório e rode o script de novo. -->
+
+<!-- dia: inicio -->
+[![](imagens/baixar-relatorio.svg){fig-alt="Baixar o relatório completo (.qmd)"}](downloads/relatorio.qmd)
+
+O Dia 2 corresponde às seções 6 a 9 do relatório completo, que roda antes as seções 1 a 5.
+
+O segundo dia analisa as três dimensões do curso e termina com um indicador criado pela turma.
+
+## Programa
+
+::: {.programa}
+
+| Bloco | Conteúdo |
+|---|---|
+| 6. Violência por sexo | Violência psicológica, física e sexual, agressor e local por sexo, sexo e cor ou raça, teste de diferença |
+| 7. Orientação sexual e grupos pequenos | Violência segundo a orientação sexual, intervalos largos, semáforo do coeficiente de variação, quando agregar ou não divulgar |
+| 8. Parentalidade | Paternidade e maternidade, comparação entre pais e mães |
+| 9. Seu indicador | Em grupos, com a ficha do indicador |
+
+:::
+
+## Ponto de partida
+
+O Dia 2 continua de onde o Dia 1 parou. O bloco abaixo roda, sem mostrar a saída, o código das seções 1 a 5 do [relatório](relatorio.qmd): parâmetros, pacotes, leitura da base, recodificação e desenho amostral.
+
+```{r}
+#| label: ponto-de-partida
+
+# Linhas do relatório da seção 1 até o fim da seção 5
+linhas <- readLines('relatorio.qmd', encoding = 'UTF-8')
+inicio <- grep('^## 1\\. ', linhas)[1]
+fim <- grep('^## 6\\. ', linhas)[1] - 1
+
+# Executa esse trecho como parte desta página, descartando o texto gerado
+invisible(knitr::knit_child(text = linhas[inicio:fim], quiet = TRUE))
+```
+<!-- /dia -->
+
+## 6. Violência por sexo
+
+### Funções para os testes
+
+Os blocos 6 a 8 comparam grupos com testes de hipóteses feitos com o desenho amostral. As funções abaixo fazem cada teste para o Brasil e para os recortes e montam as frases do texto a partir dos resultados, para que o texto não dependa dos recortes escolhidos.
+
+```{r}
+#| label: funcoes-testes
+
+# Teste t da diferença entre mulheres e homens na média de uma variável (para
+# uma dummy, a diferença entre as taxas, em pontos percentuais), em cada
+# recorte. O svyttest() estima a diferença Mulher - Homem
+testa_sexo <- function(desenho, variavel) {
+  lapply(recortes_estimacao, function(recorte) {
+    teste <- sem_avisos_inofensivos(
+      svyttest(reformulate('sexo', variavel), desenho_recorte(desenho, recorte))
+    )
+    tibble(
+      recorte = nome_recorte(recorte),
+      diferenca = unname(teste$estimate),
+      estatistica_t = unname(teste$statistic),
+      p_valor = teste$p.value
+    )
+  }) |>
+    bind_rows() |>
+    mutate(rejeita_h0 = p_valor < 0.05)
+}
+
+# Teste qui-quadrado de independência entre duas variáveis categóricas, com a
+# correção de Rao-Scott do survey (estatística F), em cada recorte
+testa_independencia <- function(desenho, variavel1, variavel2) {
+  lapply(recortes_estimacao, function(recorte) {
+    teste <- sem_avisos_inofensivos(
+      svychisq(reformulate(c(variavel1, variavel2)),
+               desenho_recorte(desenho, recorte))
+    )
+    tibble(
+      recorte = nome_recorte(recorte),
+      estatistica_f = unname(teste$statistic),
+      p_valor = unname(teste$p.value)
+    )
+  }) |>
+    bind_rows() |>
+    mutate(rejeita_h0 = p_valor < 0.05)
+}
+
+# p-valor no formato brasileiro, com três casas
+p_valor_texto <- function(p) {
+  if_else(p < 0.001, '<0,001',
+          format(round(p, 3), nsmall = 3, decimal.mark = ','))
+}
+
+# Junta os nomes dos recortes, sem depender do artigo de cada um:
+# 'no recorte Bahia', 'nos recortes Brasil, Bahia e Sul'
+recortes_texto <- function(x) {
+  if (length(x) == 1) {
+    return(paste('no recorte', x))
+  }
+  paste('nos recortes',
+        paste(paste(x[-length(x)], collapse = ', '), 'e', x[length(x)]))
+}
+
+# A conclusão sai da decisão de cada recorte, ao nível de 5%
+conclusao_teste <- function(teste) {
+  rejeita <- teste$recorte[teste$rejeita_h0]
+  nao_rejeita <- teste$recorte[!teste$rejeita_h0]
+  if (length(nao_rejeita) == 0) {
+    'a hipótese nula é rejeitada em todos os recortes'
+  } else if (length(rejeita) == 0) {
+    'a hipótese nula não é rejeitada em nenhum recorte'
+  } else {
+    paste0('a hipótese nula é rejeitada ', recortes_texto(rejeita),
+           ', mas não ', recortes_texto(nao_rejeita))
+  }
+}
+
+# Os p-valores de cada recorte: 'Brasil, <0,001; Rio de Janeiro, 0,012'
+p_valores_recortes <- function(teste) {
+  paste(teste$recorte, p_valor_texto(teste$p_valor), sep = ', ',
+        collapse = '; ')
+}
+
+# Tabela de um teste: recorte, estatística, p-valor e decisão
+tabela_teste <- function(teste) {
+  teste |>
+    mutate(
+      across(any_of(c('diferenca', 'estatistica_t', 'estatistica_f')), uma_casa),
+      p_valor = p_valor_texto(p_valor),
+      rejeita_h0 = if_else(rejeita_h0, 'Sim', 'Não')
+    ) |>
+    rename(any_of(c(
+      Recorte = 'recorte', 'Diferença M - H (p.p.)' = 'diferenca',
+      'Estatística t' = 'estatistica_t', 'Estatística F' = 'estatistica_f',
+      'p-valor' = 'p_valor', 'Rejeita H0 (5%)?' = 'rejeita_h0'
+    ))) |>
+    knitr::kable(align = 'l')
+}
+```
+
+### As taxas de violência
+
+As quatro taxas de violência nos 12 meses anteriores à entrevista e a de violência sexual alguma vez na vida, por sexo, entre as pessoas de 18 anos ou mais. Uma única chamada da `taxa()` estima as cinco dummies.
+
+```{r}
+#| label: violencia-sexo
+#| cache: true
+
+violencia_sexo <- taxa(
+  desenho_adultos,
+  c('violencia', 'violencia_psicologica', 'violencia_fisica',
+    'violencia_sexual', 'violencia_sexual_vida')
+)
+```
+
+```{r, fig.height = 4.5}
+#| label: fig-violencia-sexo
+#| fig-cap: "Taxas de violência entre as pessoas de 18 anos ou mais, por tipo e sexo, com IC de 95%. Exceto na última, o período é de 12 meses antes da entrevista"
+
+grafico_precisao(violencia_sexo, x = 'indicador')
+```
+
+```{r}
+#| label: tbl-violencia-sexo
+#| tbl-cap: "Taxas de violência entre as pessoas de 18 anos ou mais, por tipo e sexo"
+
+violencia_sexo |>
+  arrange(recorte, indicador, sexo) |>
+  tabela_precisao()
+```
+
+### Mulheres e homens são vítimas na mesma proporção?
+
+O teste t com o desenho amostral compara a taxa de violência (qualquer tipo) das mulheres com a dos homens:
+
+$$
+\begin{cases}
+H_0: p_M = p_H \\
+H_1: p_M \neq p_H
+\end{cases}
+$$
+
+em que $p_M$ e $p_H$ são as taxas de violência de mulheres e homens de 18 anos ou mais na população.
+
+```{r}
+#| label: tbl-teste-violencia-sexo
+#| tbl-cap: "Teste t da diferença entre as taxas de violência (qualquer tipo) de mulheres e homens"
+#| cache: true
+
+teste_violencia <- testa_sexo(desenho_adultos, 'violencia')
+
+teste_violencia |>
+  mutate(diferenca = diferenca * 100) |>
+  tabela_teste()
+```
+
+Ao nível de 5%, `r conclusao_teste(teste_violencia)` (p-valores: `r p_valores_recortes(teste_violencia)`).
+
+### Sexo e cor ou raça
+
+A violência não atinge da mesma forma todas as mulheres, nem todos os homens. Cruzar o sexo com a cor ou raça mostra se as desigualdades se somam. O grupo "Outras" (amarelas e indígenas) tem amostra pequena, e os seus intervalos são largos.
+
+```{r}
+#| label: violencia-cor-sexo
+#| cache: true
+
+violencia_cor_sexo <- taxa(desenho_adultos, 'violencia', por = c('cor_raca', 'sexo'))
+```
+
+```{r, fig.height = 4.5}
+#| label: fig-violencia-cor-sexo
+#| fig-cap: "Taxa de violência (qualquer tipo, 12 meses) entre as pessoas de 18 anos ou mais, por cor ou raça e sexo, com IC de 95%"
+
+grafico_precisao(violencia_cor_sexo, x = 'cor_raca')
+```
+
+```{r}
+#| label: tbl-violencia-cor-sexo
+#| tbl-cap: "Taxa de violência (qualquer tipo, 12 meses) entre as pessoas de 18 anos ou mais, por cor ou raça e sexo"
+
+violencia_cor_sexo |>
+  select(-indicador) |>
+  arrange(recorte, cor_raca, sexo) |>
+  tabela_precisao()
+```
+
+### Quem agride e onde
+
+Para cada tipo de violência, a vítima informou o agressor da única ocorrência ou da mais grave. A distribuição das vítimas por agressor é calculada entre as vítimas de cada tipo, por sexo: o desenho é recortado para as vítimas, e o denominador passa a ser o total de vítimas.
+
+```{r}
+#| label: agressor-sexo
+#| cache: true
+#| cache.vars: !expr c('tipos_violencia', 'agressor_sexo')
+
+# Uma distribuição por tipo de violência, empilhadas, com o tipo na coluna
+# 'tipo'
+tipos_violencia <- c(
+  'Psicológica' = 'psicologica', 'Física' = 'fisica', 'Sexual' = 'sexual'
+)
+
+agressor_sexo <- lapply(names(tipos_violencia), function(tipo) {
+  sufixo <- tipos_violencia[[tipo]]
+  vitimas <- sem_avisos_inofensivos(subset(
+    desenho_adultos,
+    desenho_adultos$variables[[paste0('violencia_', sufixo)]] == 1
+  ))
+  distribuicao(vitimas, paste0('agressor_', sufixo)) |>
+    mutate(tipo = factor(tipo, levels = names(tipos_violencia)), .after = recorte)
+}) |>
+  bind_rows()
+```
+
+```{r, fig.height = 6}
+#| label: fig-agressor-sexo
+#| fig-cap: "Distribuição das vítimas de 18 anos ou mais pelo agressor da única ocorrência ou da mais grave, por tipo de violência e sexo, com IC de 95%"
+
+agressor_sexo |>
+  filter(recorte == 'Brasil') |>
+  ggplot(aes(x = estimativa, y = categoria, colour = sexo)) +
+  geom_pointrange(aes(xmin = ic_inf, xmax = ic_sup),
+                  position = position_dodge(width = 0.6)) +
+  facet_wrap(~ tipo, ncol = 1) +
+  scale_colour_manual(values = cores_sexo) +
+  scale_y_discrete(limits = rev, labels = \(x) str_wrap(x, 25)) +
+  labs(x = 'Distribuição das vítimas (%)', y = NULL, colour = NULL,
+       subtitle = 'Brasil') +
+  theme_minimal() +
+  theme(legend.position = 'top')
+```
+
+```{r}
+#| label: tbl-agressor-sexo
+#| tbl-cap: "Distribuição das vítimas de 18 anos ou mais pelo agressor da única ocorrência ou da mais grave, por tipo de violência e sexo"
+
+agressor_sexo |>
+  arrange(recorte, tipo, sexo, categoria) |>
+  rename(agressor = categoria) |>
+  tabela_precisao()
+```
+
+O local da ocorrência completa o quadro. Para a violência física:
+
+```{r}
+#| label: tbl-local-fisica
+#| tbl-cap: "Distribuição das vítimas de violência física de 18 anos ou mais pelo local da única ocorrência ou da mais grave, por sexo"
+#| cache: true
+#| cache.vars: 'local_fisica'
+
+vitimas_fisica <- sem_avisos_inofensivos(
+  subset(desenho_adultos, violencia_fisica == 1)
+)
+
+local_fisica <- distribuicao(vitimas_fisica, 'local_fisica')
+
+local_fisica |>
+  arrange(recorte, sexo, categoria) |>
+  rename(local = categoria) |>
+  tabela_precisao()
+```
+
+::: {.callout-note}
+## Distribuições entre as vítimas
+Nas distribuições por agressor e por local, o denominador são as vítimas, e não a população. Com a violência sexual, que atinge uma parcela pequena da população, o número de vítimas na amostra é pequeno, sobretudo entre os homens e nos recortes geográficos: os intervalos ficam largos, e o bloco 7 mostra como avaliar se uma estimativa assim pode ser divulgada.
+:::
+
+## 7. Orientação sexual e grupos pequenos
+
+### Violência segundo a orientação sexual
+
+A população que se declara homossexual ou bissexual é pequena, e a amostra também. O bloco anterior comparou homens e mulheres, grupos com dezenas de milhares de pessoas na amostra cada um. Aqui, a comparação é com grupos de algumas centenas ou dezenas de pessoas. Antes de estimar, vale contar quantas pessoas da amostra há em cada grupo:
+
+```{r}
+#| label: tbl-amostra-orientacao
+#| tbl-cap: "Pessoas de 18 anos ou mais na amostra, por orientação sexual e sexo"
+
+pns |>
+  filter(adulto == 1) |>
+  count(orientacao_sexual, sexo) |>
+  pivot_wider(names_from = sexo, values_from = n) |>
+  rename('Orientação sexual' = orientacao_sexual) |>
+  knitr::kable(align = 'l',
+               format.args = list(big.mark = '.', decimal.mark = ','))
+```
+
+As taxas de violência por orientação sexual:
+
+```{r}
+#| label: violencia-orientacao
+#| cache: true
+
+violencia_orientacao <- taxa(
+  desenho_adultos,
+  c('violencia', 'violencia_psicologica', 'violencia_fisica', 'violencia_sexual'),
+  por = 'orientacao_sexual'
+)
+```
+
+```{r, fig.height = 5}
+#| label: fig-violencia-orientacao
+#| fig-cap: "Taxas de violência (12 meses) entre as pessoas de 18 anos ou mais, por tipo e orientação sexual, com IC de 95%"
+
+grafico_precisao(violencia_orientacao, x = 'indicador', cor = 'orientacao_sexual')
+```
+
+### O semáforo do coeficiente de variação
+
+O coeficiente de variação ajuda a decidir se uma estimativa pode ser divulgada. Não há um limite único; uma convenção comum, usada aqui, é:
+
+- 🟢 **até 15%:** estimativa precisa;
+- 🟡 **de 15% a 30%:** usar com cautela, sempre com o intervalo de confiança;
+- 🔴 **mais de 30%:** estimativa imprecisa, que não deve ser divulgada sozinha;
+- ⚪ **sem casos na amostra:** nenhuma pessoa da amostra no numerador. A estimativa é 0%, mas não há como medir a sua precisão: o CV e o IC não existem.
+
+```{r}
+#| label: funcao-semaforo
+
+# Classificação do CV pela convenção acima
+semaforo <- function(cv) {
+  case_when(
+    is.na(cv) ~ '⚪ sem casos na amostra',
+    cv <= 15 ~ '🟢 até 15%',
+    cv <= 30 ~ '🟡 15% a 30%',
+    .default = '🔴 mais de 30%'
+  )
+}
+```
+
+```{r}
+#| label: tbl-violencia-orientacao
+#| tbl-cap: "Taxas de violência (12 meses) entre as pessoas de 18 anos ou mais, por tipo e orientação sexual, com o semáforo do CV"
+
+violencia_orientacao |>
+  mutate(precisao = semaforo(cv)) |>
+  arrange(recorte, indicador, orientacao_sexual) |>
+  tabela_precisao()
+```
+
+O semáforo fica vermelho com mais frequência na categoria "Outra orientação", que tem poucas dezenas de pessoas na amostra, e nos recortes geográficos. Quando a estimativa de um grupo é imprecisa, há três caminhos: agregar o grupo a outro com sentido teórico próximo, agregar o território (uma Grande Região em vez de uma UF, ou o Brasil), ou não divulgar a estimativa. Os três têm custos: agregar esconde diferenças dentro do grupo novo, e não divulgar tira o grupo da análise.
+
+### Agregar ou separar?
+
+As publicações do IBGE juntam homossexuais e bissexuais. Separar os dois grupos mostra o que a agregação esconde, e o que custa em precisão:
+
+```{r}
+#| label: tbl-violencia-orientacao-detalhada
+#| tbl-cap: "Taxa de violência (qualquer tipo, 12 meses) entre as pessoas de 18 anos ou mais, por orientação sexual detalhada, com o semáforo do CV"
+#| cache: true
+#| cache.vars: 'violencia_orientacao_detalhada'
+
+# A orientação sexual com homossexuais e bissexuais separados. O update()
+# acrescenta a variável ao desenho, sem refazê-lo
+desenho_detalhado <- update(
+  desenho_adultos,
+  orientacao_detalhada = factor(case_when(
+    Y008 == 1 ~ 'Heterossexual',
+    Y008 == 2 ~ 'Bissexual',
+    Y008 == 3 ~ 'Homossexual'
+  ), levels = c('Heterossexual', 'Homossexual', 'Bissexual'))
+)
+
+violencia_orientacao_detalhada <- taxa(
+  desenho_detalhado, 'violencia', por = c('orientacao_detalhada', 'sexo')
+)
+
+violencia_orientacao_detalhada |>
+  select(-indicador) |>
+  mutate(precisao = semaforo(cv)) |>
+  arrange(recorte, orientacao_detalhada, sexo) |>
+  tabela_precisao()
+```
+
+### A violência depende da orientação sexual?
+
+O teste qui-quadrado de independência verifica se a violência (qualquer tipo) e a orientação sexual estão associadas:
+
+$$
+\begin{cases}
+H_0: \text{a violência é independente da orientação sexual} \\
+H_1: \text{a violência não é independente da orientação sexual}
+\end{cases}
+$$
+
+```{r}
+#| label: tbl-teste-violencia-orientacao
+#| tbl-cap: "Teste qui-quadrado de independência entre a violência (qualquer tipo, 12 meses) e a orientação sexual, com a correção de Rao-Scott"
+#| cache: true
+
+teste_orientacao <- testa_independencia(desenho_adultos, 'violencia',
+                                        'orientacao_sexual')
+
+tabela_teste(teste_orientacao)
+```
+
+Ao nível de 5%, `r conclusao_teste(teste_orientacao)` (p-valores: `r p_valores_recortes(teste_orientacao)`). Com grupos pequenos, o teste tem pouco poder: não rejeitar a hipótese nula num recorte pode significar só que a amostra não basta para detectar a diferença. Nos recortes com poucas pessoas em alguma combinação de categorias, o `svychisq()` pode avisar que a aproximação do qui-quadrado pode estar incorreta. Esse aviso não é escondido, porque é um alerta real sobre a qualidade do teste.
+
+### Quem não respondeu
+
+A taxa de pessoas que não sabem ou se recusaram a responder a orientação sexual também é um resultado. Ela mostra onde a pergunta encontra mais dificuldade, por exemplo entre as pessoas com menos anos de estudo, para quem termos como "heterossexual" podem ser pouco familiares.
+
+```{r}
+#| label: nao-resposta-instrucao
+#| cache: true
+
+nao_resposta_instrucao <- taxa(desenho_adultos, 'orientacao_nao_respondida',
+                               por = c('instrucao', 'sexo'))
+```
+
+```{r, fig.height = 4.5}
+#| label: fig-nao-resposta-instrucao
+#| fig-cap: "Taxa de pessoas de 18 anos ou mais que não sabem ou se recusaram a responder a orientação sexual, por nível de instrução e sexo, com IC de 95%"
+
+nao_resposta_instrucao |>
+  mutate(instrucao = str_wrap(instrucao, 20),
+         instrucao = factor(instrucao, levels = unique(instrucao))) |>
+  grafico_precisao(x = 'instrucao')
+```
+
+## 8. Parentalidade
+
+### Ter filhos, para homens e mulheres
+
+A taxa de homens que já tiveram filho biológico e a de mulheres que já tiveram parto, por grupo de idade. Lembre que as duas perguntas não são iguais (bloco 4). Os grupos de idade começam aos 15 anos, como nas publicações do IBGE.
+
+```{r}
+#| label: tem-filho-idade
+#| cache: true
+
+tem_filho_idade <- taxa(desenho, 'tem_filho', por = c('faixa_etaria_15', 'sexo'))
+```
+
+```{r, fig.height = 4.5}
+#| label: fig-tem-filho-idade
+#| fig-cap: "Taxa de homens que já tiveram filho biológico e de mulheres que já tiveram parto, entre as pessoas de 15 anos ou mais, por grupo de idade, com IC de 95%"
+
+grafico_precisao(tem_filho_idade, x = 'faixa_etaria_15')
+```
+
+```{r}
+#| label: tbl-tem-filho-idade
+#| tbl-cap: "Taxa de homens que já tiveram filho biológico e de mulheres que já tiveram parto, entre as pessoas de 15 anos ou mais, por grupo de idade"
+
+tem_filho_idade |>
+  select(-indicador) |>
+  arrange(recorte, faixa_etaria_15, sexo) |>
+  tabela_precisao()
+```
+
+O número médio de filhos (homens) e de partos (mulheres), pelos mesmos grupos de idade:
+
+```{r}
+#| label: tbl-numero-filhos
+#| tbl-cap: "Número médio de filhos biológicos (homens) e de partos (mulheres), entre as pessoas de 15 anos ou mais, por grupo de idade"
+#| cache: true
+
+numero_filhos_idade <- media(desenho, 'numero_filhos',
+                             por = c('faixa_etaria_15', 'sexo'))
+
+numero_filhos_idade |>
+  arrange(recorte, faixa_etaria_15, sexo) |>
+  tabela_precisao(unidade = 'filhos ou partos')
+```
+
+### A idade dos homens no nascimento do primeiro filho
+
+A idade ao nascimento do primeiro filho só foi perguntada aos homens. A média é calculada entre os homens que já tiveram filho biológico, por cor ou raça:
+
+```{r}
+#| label: tbl-idade-primeiro-filho
+#| tbl-cap: "Idade média dos homens de 15 anos ou mais no nascimento do primeiro filho, entre os que já tiveram filho biológico, por cor ou raça"
+#| cache: true
+#| cache.vars: 'idade_primeiro_filho'
+
+pais <- sem_avisos_inofensivos(subset(desenho, pai == 1))
+
+idade_primeiro_filho <- media(pais, 'idade_primeiro_filho', por = 'cor_raca')
+
+idade_primeiro_filho |>
+  arrange(recorte, cor_raca) |>
+  tabela_precisao(unidade = 'anos')
+```
+
+### A participação dos homens no pré-natal
+
+Entre os homens com mulher grávida ou com filho de menos de 6 anos, a taxa dos que acompanharam o pré-natal, por situação do domicílio:
+
+```{r}
+#| label: tbl-prenatal-situacao
+#| tbl-cap: "Taxa de homens de 15 anos ou mais que acompanharam o pré-natal, entre os que tinham mulher grávida ou filho de menos de 6 anos, por situação do domicílio"
+#| cache: true
+#| cache.vars: 'prenatal_situacao'
+
+homens_prenatal <- sem_avisos_inofensivos(
+  subset(desenho, !is.na(acompanhou_prenatal))
+)
+
+prenatal_situacao <- taxa(homens_prenatal, 'acompanhou_prenatal',
+                          por = 'situacao')
+
+prenatal_situacao |>
+  select(-indicador) |>
+  mutate(precisao = semaforo(cv)) |>
+  arrange(recorte, situacao) |>
+  tabela_precisao()
+```
+
+### Pais e mães jovens: uma regressão
+
+Entre as pessoas de 15 a 29 anos, a chance de já ter tido filho (homens) ou parto (mulheres) depende do sexo, da cor ou raça, do nível de instrução e da situação do domicílio. Uma regressão logística com o desenho amostral (`svyglm()` com `family = quasibinomial()`) estima o efeito de cada característica mantendo as outras fixas. O resultado é apresentado como **razão de chances**: acima de 1, a categoria tem mais chance de ter filho que a categoria de referência (homem, branca, sem instrução e fundamental incompleto, urbana); abaixo de 1, menos. A regressão é feita só para o Brasil.
+
+```{r}
+#| label: tbl-regressao-filho
+#| tbl-cap: "Razões de chances de ter tido filho (homens) ou parto (mulheres), pessoas de 15 a 29 anos, Brasil (regressão logística com o desenho amostral)"
+#| cache: true
+#| cache.vars: 'razoes_chances'
+
+jovens <- sem_avisos_inofensivos(
+  subset(desenho, idade <= 29 & cor_raca != 'Outras')
+)
+
+modelo_filho <- sem_avisos_inofensivos(
+  svyglm(tem_filho ~ sexo + cor_raca + instrucao + situacao,
+         design = jovens, family = quasibinomial())
+)
+
+# Razões de chances e IC: exp() dos coeficientes e dos limites
+razoes_chances <- sem_avisos_inofensivos(
+  tidy(modelo_filho, conf.int = TRUE, exponentiate = TRUE)
+) |>
+  filter(term != '(Intercept)')
+
+# Nome legível de cada termo: a variável (pelos rótulos) e a categoria
+rotulo_termo <- function(termo) {
+  variavel <- names(rotulos)[sapply(names(rotulos), \(v) startsWith(termo, v))][1]
+  paste0(rotulos[[variavel]], ': ', str_remove(termo, variavel))
+}
+
+razoes_chances |>
+  mutate(
+    Termo = sapply(term, rotulo_termo),
+    'Razão de chances' = uma_casa(estimate),
+    'IC de 95%' = paste0(uma_casa(conf.low), ' a ', uma_casa(conf.high)),
+    'p-valor' = p_valor_texto(p.value)
+  ) |>
+  select(Termo, 'Razão de chances', 'IC de 95%', 'p-valor') |>
+  knitr::kable(align = 'l')
+```
+
+Mantidas as outras características, a chance de uma mulher de 15 a 29 anos já ter tido parto é `r uma_casa(razoes_chances$estimate[razoes_chances$term == 'sexoMulher'])` vez(es) a chance de um homem da mesma idade já ter tido filho. Parte dessa diferença vem das próprias perguntas: as mulheres respondem sobre partos, e os homens sobre filhos que conhecem.
+
+## 9. Seu indicador
+
+Para fechar, cada grupo cria um indicador novo, de preferência cruzando duas dimensões do curso, e o acrescenta ao relatório. O caminho é o mesmo dos blocos anteriores: definir o indicador, criar a dummy, estimar com o desenho, apresentar e testar.
+
+<!-- dia: antes de "O exemplo abaixo mostra o caminho completo" -->
+Em grupos, preencham a ficha do indicador, calculem o indicador com o desenho amostral, apresentem o resultado numa tabela com o semáforo do CV e testem uma comparação. Depois, incluam o resultado no [relatório](relatorio.qmd).
+
+::: {.callout-note icon=false}
+## Ficha do indicador
+- **Nome:**
+- **Definição:**
+- **Numerador:**
+- **Denominador:**
+- **População de referência:**
+- **Variáveis da PNS:**
+- **Desagregação:**
+- **Comparação a testar:**
+:::
+
+<!-- /dia -->
+
+O exemplo abaixo mostra o caminho completo para um indicador que cruza a violência e as relações próximas.
+
+::: {.callout-note icon=false}
+## Ficha do indicador (exemplo)
+- **Nome:** Taxa de violência por parceiro íntimo
+- **Definição:** pessoas que sofreram violência psicológica, física ou sexual cujo agressor (da única ocorrência ou da mais grave) foi cônjuge, companheiro(a), namorado(a) ou ex, nos 12 meses anteriores à entrevista
+- **Numerador:** pessoas de 18 anos ou mais vítimas de violência por parceiro íntimo em pelo menos um dos três tipos
+- **Denominador:** pessoas de 18 anos ou mais
+- **População de referência:** moradores selecionados de 18 anos ou mais
+- **Variáveis da PNS:** `V006`, `V018`, `V032` (agressor), pelas variáveis `agressor_psicologica`, `agressor_fisica` e `agressor_sexual` do bloco 4
+- **Desagregação:** sexo; Brasil e recortes geográficos
+- **Comparação a testar:** a taxa das mulheres é igual à dos homens?
+:::
+
+```{r}
+#| label: seu-indicador
+
+# 1. A dummy do numerador, criada no desenho com o update(). O %in% trata
+#    como "não" quem não foi vítima (agressor NA)
+parceiro <- 'Cônjuge, companheiro(a), namorado(a) ou ex'
+
+desenho_adultos <- update(
+  desenho_adultos,
+  violencia_parceiro = if_else(
+    agressor_psicologica %in% parceiro | agressor_fisica %in% parceiro |
+      agressor_sexual %in% parceiro, 1, 0
+  )
+)
+
+# 2. A taxa por sexo, para o Brasil e os recortes
+violencia_parceiro <- taxa(desenho_adultos, 'violencia_parceiro')
+```
+
+```{r}
+#| label: tbl-seu-indicador
+#| tbl-cap: "Taxa de violência por parceiro íntimo (12 meses) entre as pessoas de 18 anos ou mais, por sexo"
+
+violencia_parceiro |>
+  select(-indicador) |>
+  mutate(precisao = semaforo(cv)) |>
+  arrange(recorte, sexo) |>
+  tabela_precisao()
+```
+
+```{r}
+#| label: tbl-teste-seu-indicador
+#| tbl-cap: "Teste t da diferença entre as taxas de violência por parceiro íntimo de mulheres e homens"
+
+# 3. A comparação: a diferença entre as taxas de mulheres e homens
+teste_parceiro <- testa_sexo(desenho_adultos, 'violencia_parceiro')
+
+teste_parceiro |>
+  mutate(diferenca = diferenca * 100) |>
+  tabela_teste()
+```
+
+Ao nível de 5%, `r conclusao_teste(teste_parceiro)` (p-valores: `r p_valores_recortes(teste_parceiro)`).
+
+<!-- dia: fim -->
+## Encerramento
+
+O mesmo relatório pode ser renderizado para outro recorte geográfico: basta mudar o parâmetro `recortes`, porque a base e o desenho já baixados têm todo o Brasil.
+<!-- /dia -->

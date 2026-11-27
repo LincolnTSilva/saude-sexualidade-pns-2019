@@ -1,0 +1,99 @@
+---
+title: "Materiais"
+---
+
+## Material de aula
+
+| Arquivo | Conteúdo |
+|---|---|
+| [Dia 1: da pesquisa aos primeiros indicadores](dia1.qmd) | A PNS 2019, leitura da base, recodificação e indicadores com precisão |
+| [Dia 2: violência, orientação sexual e parentalidade](dia2.qmd) | Análise das três dimensões, grupos pequenos e atividade final |
+
+## Relatório final
+
+[Relatório em Quarto](relatorio.qmd), parametrizado por recorte geográfico, com os indicadores do curso.
+
+[<i class="bi bi-download"></i> Baixar o relatório (.qmd)](downloads/relatorio.qmd){.btn .btn-primary}
+
+## Ficha de indicador
+
+Modelo para a atividade do bloco 9, disponível no [material do Dia 2](dia2.qmd).
+
+## Dicionário resumido
+
+As variáveis da base do curso, com nome, descrição e categorias, conforme o dicionário dos microdados da PNS 2019. O dicionário completo está na [página de documentação dos microdados](https://ftp.ibge.gov.br/PNS/2019/Microdados/Documentacao/) do IBGE.
+
+| Grupo | Variável | Descrição | Categorias ou valores |
+|---|---|---|---|
+| Desenho | `ID_DOMICILIO` | Identificação do domicílio (criada pelo `PNSIBGE`) | |
+| Localização | `V0001` | Unidade da Federação | Código IBGE da UF (33 = Rio de Janeiro) |
+| Desenho | `V0024` | Estrato | |
+| Desenho | `UPA_PNS` | Unidade primária de amostragem | |
+| Desenho | `V0029` | Peso do morador selecionado sem calibração | |
+| Desenho | `V00291` | Peso do morador selecionado com calibração | Usado nas estimativas |
+| Desenho | `V00292` | Projeção da população para moradores selecionados | |
+| Desenho | `V00293` | Domínio de projeção para morador selecionado | |
+| Localização | `V0026` | Situação censitária | 1 Urbano; 2 Rural |
+| Localização | `V0031` | Tipo de área | 1 Capital; 2 Resto da RM; 3 RIDE; 4 Resto da UF |
+| Pessoa | `C006` | Sexo | 1 Homem; 2 Mulher |
+| Pessoa | `C008` | Idade na data de referência | Anos |
+| Pessoa | `C009` | Cor ou raça | 1 Branca; 2 Preta; 3 Amarela; 4 Parda; 5 Indígena; 9 Ignorado |
+| Pessoa | `C004` | Condição no domicílio | 01 Responsável; 02 Cônjuge de sexo diferente; 03 Cônjuge do mesmo sexo; 04 a 19 Filhos, outros parentes e não parentes |
+| Pessoa | `C011` | Estado civil | 1 Casado(a); 2 Divorciado(a) ou separado(a); 3 Viúvo(a); 4 Solteiro(a); 9 Ignorado |
+| Pessoa | `VDD004A` | Nível de instrução mais elevado alcançado | 1 Sem instrução; 2 Fundamental incompleto; 3 Fundamental completo; 4 Médio incompleto; 5 Médio completo; 6 Superior incompleto; 7 Superior completo |
+| Domicílio | `VDF003` | Rendimento domiciliar per capita | Reais |
+| Domicílio | `VDF004` | Faixa de rendimento domiciliar per capita | 1 Até 1/4 SM; 2 Mais de 1/4 a 1/2; 3 Mais de 1/2 a 1; 4 Mais de 1 a 2; 5 Mais de 2 a 3; 6 Mais de 3 a 5; 7 Mais de 5 SM |
+| Violência | `V001` | Privacidade assegurada na aplicação do módulo | 1 Sim; 2 Não |
+| Violência | `V00101` | Quem preencheu o questionário do módulo | 1 Próprio morador; 2 Entrevistador |
+| Violência | `V00201` a `V00205` | Violência psicológica nos 12 meses: ofendido ou humilhado; gritaram ou xingaram; ameaçado ou exposto pelas redes sociais; ameaçaram ferir alguém importante; destruíram algo de propósito | 1 Sim; 2 Não |
+| Violência | `V006`, `V018`, `V032` | Agressor da violência psicológica, física e sexual | 01 Cônjuge; 02 Ex-cônjuge; 03 Parceiro(a), namorado(a) ou ex; 04 Pai, mãe, padrasto ou madrasta; 05 Filho(a); 06 Irmão(ã); 07 Outro parente; 08 Amigo(a), colega ou vizinho(a); 09 Empregado(a); 10 Patrão ou chefe; 11 Pessoa desconhecida; 12 Policial; 13 Outro |
+| Violência | `V007`, `V019`, `V033` | Local da violência psicológica, física e sexual | 1 Residência; 2 Trabalho; 3 Estabelecimento de ensino; 4 Bar ou restaurante; 5 Via pública; 6 Internet (só `V007`) ou outro; 7 Outro (só `V007`) |
+| Violência | `V01401` a `V01405` | Violência física nos 12 meses: tapa; empurrado ou segurado com força; soco ou chute; estrangulado ou queimado; ameaçado ou ferido com arma ou objeto | 1 Sim; 2 Não |
+| Violência | `V02701`, `V02702` | Violência sexual nos 12 meses: tocado ou exposto contra a vontade; forçado a relações ou atos sexuais | 1 Sim; 2 Não |
+| Violência | `V02801`, `V02802` | As mesmas situações de violência sexual, alguma vez na vida (para quem respondeu não nos 12 meses) | 1 Sim; 2 Não |
+| Violência | `V034` | Nos últimos 12 meses, deixou de realizar atividades habituais por causa da violência sofrida | 1 Sim; 2 Não |
+| Atividade sexual | `Y001`, `Y00101` | Primeira relação sexual e idade em que ocorreu | `Y001`: 1 Idade em anos; 2 Nunca teve; 3 Não sabe; 4 Recusou-se |
+| Atividade sexual | `Y002` | Teve relações sexuais nos últimos 12 meses | 1 Sim; 2 Não; 3 Recusou-se |
+| Atividade sexual | `Y003` | Frequência de uso de camisinha nos últimos 12 meses | 1 Sempre; 2 Às vezes; 3 Nenhuma vez; 4 Recusou-se |
+| Orientação sexual | `Y008` | Qual é a sua orientação sexual? | 1 Heterossexual; 2 Bissexual; 3 Homossexual; 4 Outra; 5 Não sabe; 6 Recusou-se |
+| Paternidade | `Z001` | Tem ou teve filho(s) biológico(s) | 1 Sim; 2 Não; 3 Não sabe; 9 Ignorado |
+| Paternidade | `Z00101`, `Z00102` | Número de filhos homens e mulheres | 00 a 32; 99 Ignorado |
+| Paternidade | `Z002` | Idade quando o primeiro filho nasceu | Anos; 99 Ignorado |
+| Paternidade | `Z003` | Idade do filho mais novo | Anos; 99 Ignorado |
+| Paternidade | `Z004` | Alguma mulher está grávida dele | 1 Sim; 2 Não; 3 Não sabe; 9 Ignorado |
+| Paternidade | `Z005` | Desejava ter o filho naquele momento (gravidez atual ou último filho com menos de 6 anos) | 1 Sim; 2 Queria esperar; 3 Não queria; 9 Ignorado |
+| Paternidade | `Z006`, `Z007` | Foi feito pré-natal; a maioria das consultas foi pelo SUS | 1 Sim; 2 Não; 3 Não sabe; 9 Ignorado |
+| Paternidade | `Z008` | Acompanhou o pré-natal | 1 Sim; 2 Não; 9 Ignorado |
+| Paternidade | `Z009` a `Z012` | Exames solicitados e feitos; incentivo a palestras; informado sobre participar do parto | 1 Sim; 2 Não; 9 Ignorado |
+| Maternidade | `S065` | Alguma vez ficou grávida | 1 Sim; 2 Não; 9 Ignorado |
+| Maternidade | `S066` | Número de partos | 00 a 30; 99 Ignorado |
+| Maternidade | `S06701` a `S06703` | Data do último parto (dia, mês e ano) | |
+| Saúde da mulher | `R031` | Teve relações sexuais nos últimos 12 meses | 1 Sim; 2 Não; 3 Recusou-se; 9 Ignorado |
+| Saúde da mulher | `R032` | Participou de grupo de planejamento familiar nos últimos 12 meses | 1 Sim; 2 Não; 9 Ignorado |
+| Saúde da mulher | `R034` | Usa algum método para evitar a gravidez | 1 Sim; 2 Não; 9 Ignorado |
+| Saúde da mulher | `VDR001` | Método contraceptivo mais eficaz que usa | 1 Laqueadura; 2 Vasectomia do parceiro; 3 DIU; 4 Injeção; 5 Pílula; 6 Camisinha masculina; 7 Outro |
+
+: Fonte: IBGE, dicionário dos microdados da PNS 2019. Nas perguntas de um módulo, o valor fica vazio (`NA`) para as pessoas fora do público da pergunta.
+
+## Indicadores trabalhados
+
+Os indicadores calculados no [relatório](relatorio.qmd), como na tabela "Das variáveis aos indicadores" do bloco 4.
+
+| Indicador | Tipo | Numerador | Denominador | Variáveis |
+|---|---|---|---|---|
+| **Orientação sexual** | | | | |
+| Distribuição por orientação sexual | Distribuição | Pessoas em cada categoria | Pessoas de 18 anos ou mais | `orientacao_sexual` |
+| Taxa de pessoas homossexuais ou bissexuais | Taxa | Pessoas homossexuais ou bissexuais | Pessoas de 18 anos ou mais | `homo_bi` |
+| Taxa de não resposta à orientação sexual | Taxa | Pessoas que não sabem ou se recusaram a responder | Pessoas de 18 anos ou mais | `orientacao_nao_respondida` |
+| **Violência** | | | | |
+| Taxa de violência (qualquer tipo), psicológica, física e sexual nos 12 meses | Taxa | Vítimas de cada tipo | Pessoas de 18 anos ou mais | `violencia`, `violencia_psicologica`, `violencia_fisica`, `violencia_sexual` |
+| Taxa de violência sexual alguma vez na vida | Taxa | Vítimas, nos 12 meses ou antes | Pessoas de 18 anos ou mais | `violencia_sexual_vida` |
+| Agressor e local da ocorrência | Distribuição | Vítimas em cada categoria | Vítimas de cada tipo | `agressor_*`, `local_*` |
+| **Parentalidade** | | | | |
+| Taxa de homens que já foram pais | Taxa | Homens com filho biológico | Homens de 15 anos ou mais | `pai` |
+| Taxa de mulheres que já tiveram parto | Taxa | Mulheres com pelo menos um parto | Mulheres de 15 anos ou mais | `mae` |
+| Número médio de filhos (homens) ou de partos (mulheres) | Média | Soma dos filhos ou dos partos | Homens ou mulheres de 15 anos ou mais | `numero_filhos` |
+| Idade média ao nascimento do primeiro filho | Média | Soma das idades | Homens com filho biológico | `idade_primeiro_filho` |
+| Taxa de participação no pré-natal | Taxa | Homens que acompanharam o pré-natal | Homens com mulher grávida ou com filho de menos de 6 anos | `acompanhou_prenatal` |
+
+: Todos os indicadores podem ser desagregados por `sexo`, `cor_raca`, `faixa_etaria`, `instrucao`, `rendimento`, `situacao` e pelo recorte geográfico. Os de violência também por `orientacao_sexual`.
